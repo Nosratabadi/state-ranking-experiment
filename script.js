@@ -60,12 +60,12 @@ let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
 
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwKn9dFC7WNjpzrkmP_FIep5pxw83iKkWkLvWS6QFTRM9N36oQ01vvYuudnlQFsj7ldvg/exec';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwptxzxeqgN_8fpbKlyC-6ySVwMfu1lSQvwcqDTirxmigZDNFKAl3f4IWaUwjueoC1PaA/exec';
 
 function loadStimulus() {
     if (currentTrial < maxTrials) {
         currentStimulus = stimuli[Math.floor(Math.random() * stimuli.length)];
-        document.getElementById('experiment').innerHTML = `
+        let content = `
             <div id="stimulus-text">
                 <h3>State Information:</h3>
                 <table>
@@ -75,31 +75,58 @@ function loadStimulus() {
                     <tr><td>Median Household Income Rank - 2008</td><td>${currentStimulus.income_rank}</td></tr>
                     <tr><td>Domestic Travel Expenditure Rank - 2009</td><td>${currentStimulus.travel_rank}</td></tr>
                 </table>
+            </div>`;
+
+        if (isSecondRound && delegatedToAI) {
+            content += `
+                <p>AI's Prediction: ${currentStimulus.ai_prediction}</p>
+                <button id="check-correct-button">Check Correct Answer</button>
+                <div id="correct-answer-text"></div>
+                <button id="next-button" disabled>Next</button>
+            `;
+        } else {
+            content += `
                 <p>Please select a rank for this state from the available numbers below.</p>
-            </div>
-            <div id="rank-buttons"></div>
-            <button id="check-correct-button" disabled>Check Correct Answer</button>
-            <div id="correct-answer-text"></div>
-            ${!isSecondRound ? '<button id="check-ai-button" disabled>Check AI\'s Prediction</button>' : ''}
-            ${!isSecondRound ? '<div id="ai-prediction-text"></div>' : ''}
-            <button id="next-button" disabled>Next</button>
-        `;
+                <div id="rank-buttons"></div>
+                <button id="check-correct-button" disabled>Check Correct Answer</button>
+                <div id="correct-answer-text"></div>
+                ${!isSecondRound ? '<button id="check-ai-button" disabled>Check AI\'s Prediction</button>' : ''}
+                ${!isSecondRound ? '<div id="ai-prediction-text"></div>' : ''}
+                <button id="next-button" disabled>Next</button>
+            `;
+        }
+
+        document.getElementById('experiment').innerHTML = content;
         
-        const rankButtonsContainer = document.getElementById('rank-buttons');
-        rankButtonsContainer.innerHTML = '';
-        availableRanks.forEach(rank => {
-            const button = document.createElement('button');
-            button.className = 'rank-button';
-            button.textContent = rank;
-            button.onclick = () => onRankSelect(rank);
-            rankButtonsContainer.appendChild(button);
-        });
+        if (!isSecondRound || !delegatedToAI) {
+            const rankButtonsContainer = document.getElementById('rank-buttons');
+            rankButtonsContainer.innerHTML = '';
+            availableRanks.forEach(rank => {
+                const button = document.createElement('button');
+                button.className = 'rank-button';
+                button.textContent = rank;
+                button.onclick = () => onRankSelect(rank);
+                rankButtonsContainer.appendChild(button);
+            });
+        }
 
         document.getElementById('check-correct-button').onclick = showCorrectAnswer;
         if (!isSecondRound) {
             document.getElementById('check-ai-button').onclick = showAIPrediction;
         }
         document.getElementById('next-button').onclick = nextTrial;
+
+        if (isSecondRound && delegatedToAI) {
+            saveData({
+                participantId: participantId,
+                round: 2,
+                trial: currentTrial + 1,
+                participant_rank: 'N/A',
+                correct_rank: currentStimulus.correct_answer,
+                ai_prediction: currentStimulus.ai_prediction,
+                final_decision: ''
+            });
+        }
     } else {
         if (!isSecondRound) {
             showFinalDecision();
@@ -110,9 +137,6 @@ function loadStimulus() {
 }
 
 function onRankSelect(rank) {
-    if (delegatedToAI && isSecondRound) {
-        showAIPrediction();
-    }
     saveData({
         participantId: participantId,
         round: isSecondRound ? 2 : 1,
@@ -126,7 +150,7 @@ function onRankSelect(rank) {
     event.target.disabled = true;
     event.target.style.backgroundColor = 'lightgray';
     document.getElementById('check-correct-button').disabled = false;
-    if (!isSecondRound && !delegatedToAI) {
+    if (!isSecondRound) {
         document.getElementById('check-ai-button').disabled = false;
     }
 }
@@ -146,12 +170,8 @@ function showCorrectAnswer() {
 
 function showAIPrediction() {
     const aiPrediction = currentStimulus.ai_prediction;
-    if (document.getElementById('ai-prediction-text')) {
-        document.getElementById('ai-prediction-text').innerHTML = `<p>AI's Prediction: ${aiPrediction}</p>`;
-    } else {
-        document.getElementById('correct-answer-text').innerHTML = `<p>AI's Prediction: ${aiPrediction}</p>`;
-    }
-    document.getElementById('check-correct-button').disabled = false;
+    document.getElementById('ai-prediction-text').innerHTML = `<p>AI's Prediction: ${aiPrediction}</p>`;
+    document.getElementById('next-button').disabled = false;
 }
 
 function nextTrial() {
@@ -216,9 +236,17 @@ function saveData(data) {
         },
         body: JSON.stringify(data)
     }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
         console.log('Data sent successfully');
     }).catch(error => {
         console.error('Error sending data:', error);
+        // Attempt to save locally if network request fails
+        let localData = JSON.parse(localStorage.getItem('experimentData') || '[]');
+        localData.push(data);
+        localStorage.setItem('experimentData', JSON.stringify(localData));
+        console.log('Data saved locally due to network error');
     });
 }
 
