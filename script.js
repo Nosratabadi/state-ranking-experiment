@@ -57,7 +57,7 @@ let availableRanks = Array.from({length: 50}, (_, i) => i + 1);
 let currentStimulus = null;
 let participantId = Date.now().toString(36) + Math.random().toString(36).substr(2);
 
-const GOOGLE_SHEET_URL = 'Yhttps://script.google.com/macros/s/AKfycbzG35r-rvaLE17vnwC9h81o5r4dYVvQkY8xmeXUbCCNDTAUPRj4f4O7OeGiz3P4YTTzgw/exec';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbyiIR818OQ_FCr9cGt6gEgMpi-vklrdq8t8AqfJVwfGq272IJlVCi9hz12v6H4868eHkg/exec';
 
 function loadStimulus() {
     if (currentTrial < maxTrials) {
@@ -136,7 +136,7 @@ function showFinalDecision() {
 function onFinalDecision(decision) {
     saveData({
         participantId: participantId,
-        trial: '',
+        trial: 'Final',
         participant_rank: '',
         correct_rank: '',
         ai_prediction: '',
@@ -159,9 +159,9 @@ function saveData(data) {
         },
         body: JSON.stringify(data)
     }).then(response => {
-        console.log('Data saved successfully');
+        console.log('Data sent successfully');
     }).catch(error => {
-        console.error('Error saving data:', error);
+        console.error('Error sending data:', error);
     });
 }
 
