@@ -53,11 +53,11 @@ const stimuli = [
 
 let currentTrial = 0;
 const maxTrials = 10;
-let responses = [];
 let availableRanks = Array.from({length: 50}, (_, i) => i + 1);
 let currentStimulus = null;
-let participantData = [];
-let participantId = Date.now().toString(36) + Math.random().toString(36).substr(2); // Generate a unique ID
+let participantId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
+const GOOGLE_SHEET_URL = 'Yhttps://script.google.com/macros/s/AKfycbzG35r-rvaLE17vnwC9h81o5r4dYVvQkY8xmeXUbCCNDTAUPRj4f4O7OeGiz3P4YTTzgw/exec';
 
 function loadStimulus() {
     if (currentTrial < maxTrials) {
@@ -94,12 +94,13 @@ function loadStimulus() {
 }
 
 function onRankSelect(rank) {
-    participantData.push({
+    saveData({
         participantId: participantId,
         trial: currentTrial + 1,
         participant_rank: rank,
         correct_rank: currentStimulus.correct_answer,
-        ai_prediction: currentStimulus.ai_prediction
+        ai_prediction: currentStimulus.ai_prediction,
+        final_decision: ''
     });
     availableRanks = availableRanks.filter(r => r !== rank);
     event.target.disabled = true;
@@ -108,13 +109,13 @@ function onRankSelect(rank) {
 }
 
 function showCorrectAnswer() {
-    const correctAnswer = participantData[participantData.length - 1].correct_rank;
+    const correctAnswer = currentStimulus.correct_answer;
     document.getElementById('correct-answer-text').innerHTML = `<p>Correct Answer: ${correctAnswer}</p>`;
     document.getElementById('check-ai-button').disabled = false;
 }
 
 function showAIPrediction() {
-    const aiPrediction = participantData[participantData.length - 1].ai_prediction;
+    const aiPrediction = currentStimulus.ai_prediction;
     document.getElementById('ai-prediction-text').innerHTML = `<p>AI's Prediction: ${aiPrediction}</p>`;
     document.getElementById('next-button').disabled = false;
 }
@@ -133,11 +134,14 @@ function showFinalDecision() {
 }
 
 function onFinalDecision(decision) {
-    participantData.push({
+    saveData({
         participantId: participantId,
+        trial: '',
+        participant_rank: '',
+        correct_rank: '',
+        ai_prediction: '',
         final_decision: decision
     });
-    saveData();
     document.getElementById('experiment').innerHTML = `
         <h3>Thank you for participating in the experiment!</h3>
         <p>Your responses have been recorded. You may now close this window.</p>
@@ -145,32 +149,20 @@ function onFinalDecision(decision) {
     `;
 }
 
-function saveData() {
-    let existingData = JSON.parse(localStorage.getItem('allExperimentData') || '[]');
-    existingData = existingData.concat(participantData);
-    localStorage.setItem('allExperimentData', JSON.stringify(existingData));
-}
-
-// Function for researchers to download all results
-function downloadAllResults() {
-    let allData = JSON.parse(localStorage.getItem('allExperimentData') || '[]');
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Participant ID,Trial,Participant Prediction,Correct Answer,AI Prediction,Final Decision\n";
-    
-    allData.forEach(function(row) {
-        if (row.trial) {
-            csvContent += `${row.participantId},${row.trial},${row.participant_rank},${row.correct_rank},${row.ai_prediction},\n`;
-        } else if (row.final_decision) {
-            csvContent += `${row.participantId},,,,,${row.final_decision}\n`;
-        }
+function saveData(data) {
+    fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    }).then(response => {
+        console.log('Data saved successfully');
+    }).catch(error => {
+        console.error('Error saving data:', error);
     });
-
-    var encodedUri = encodeURI(csvContent);
-    var link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "all_experiment_results.csv");
-    document.body.appendChild(link);
-    link.click();
 }
 
 document.getElementById('check-correct-button').onclick = showCorrectAnswer;
