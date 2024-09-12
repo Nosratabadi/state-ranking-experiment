@@ -129,4 +129,15 @@ function showFinalDecision() {
     `;
 }
 
-function onFinal
+function onFinalDecision(decision) {
+    responses.push({final_decision: decision});
+    document.getElementById('experiment').innerHTML = "<h3>Thank you for participating in the experiment!</h3>";
+    console.log(JSON.stringify(responses, null, 2));  // Log results to console
+}
+
+document.getElementById('check-correct-button').onclick = showCorrectAnswer;
+document.getElementById('check-ai-button').onclick = showAIPrediction;
+document.getElementById('next-button').onclick = nextTrial;
+
+// Start the experiment
+loadStimulus();
