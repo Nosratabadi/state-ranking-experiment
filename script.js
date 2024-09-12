@@ -56,6 +56,8 @@ const maxTrials = 10;
 let responses = [];
 let availableRanks = Array.from({length: 50}, (_, i) => i + 1);
 let currentStimulus = null;
+let participantData = [];
+let participantId = Date.now().toString(36) + Math.random().toString(36).substr(2); // Generate a unique ID
 
 function loadStimulus() {
     if (currentTrial < maxTrials) {
@@ -92,7 +94,8 @@ function loadStimulus() {
 }
 
 function onRankSelect(rank) {
-    responses.push({
+    participantData.push({
+        participantId: participantId,
         trial: currentTrial + 1,
         participant_rank: rank,
         correct_rank: currentStimulus.correct_answer,
@@ -105,13 +108,13 @@ function onRankSelect(rank) {
 }
 
 function showCorrectAnswer() {
-    const correctAnswer = responses[responses.length - 1].correct_rank;
+    const correctAnswer = participantData[participantData.length - 1].correct_rank;
     document.getElementById('correct-answer-text').innerHTML = `<p>Correct Answer: ${correctAnswer}</p>`;
     document.getElementById('check-ai-button').disabled = false;
 }
 
 function showAIPrediction() {
-    const aiPrediction = responses[responses.length - 1].ai_prediction;
+    const aiPrediction = participantData[participantData.length - 1].ai_prediction;
     document.getElementById('ai-prediction-text').innerHTML = `<p>AI's Prediction: ${aiPrediction}</p>`;
     document.getElementById('next-button').disabled = false;
 }
@@ -130,9 +133,44 @@ function showFinalDecision() {
 }
 
 function onFinalDecision(decision) {
-    responses.push({final_decision: decision});
-    document.getElementById('experiment').innerHTML = "<h3>Thank you for participating in the experiment!</h3>";
-    console.log(JSON.stringify(responses, null, 2));  // Log results to console
+    participantData.push({
+        participantId: participantId,
+        final_decision: decision
+    });
+    saveData();
+    document.getElementById('experiment').innerHTML = `
+        <h3>Thank you for participating in the experiment!</h3>
+        <p>Your responses have been recorded. You may now close this window.</p>
+        <p>Your completion code is: ${participantId}</p>
+    `;
+}
+
+function saveData() {
+    let existingData = JSON.parse(localStorage.getItem('allExperimentData') || '[]');
+    existingData = existingData.concat(participantData);
+    localStorage.setItem('allExperimentData', JSON.stringify(existingData));
+}
+
+// Function for researchers to download all results
+function downloadAllResults() {
+    let allData = JSON.parse(localStorage.getItem('allExperimentData') || '[]');
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Participant ID,Trial,Participant Prediction,Correct Answer,AI Prediction,Final Decision\n";
+    
+    allData.forEach(function(row) {
+        if (row.trial) {
+            csvContent += `${row.participantId},${row.trial},${row.participant_rank},${row.correct_rank},${row.ai_prediction},\n`;
+        } else if (row.final_decision) {
+            csvContent += `${row.participantId},,,,,${row.final_decision}\n`;
+        }
+    });
+
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "all_experiment_results.csv");
+    document.body.appendChild(link);
+    link.click();
 }
 
 document.getElementById('check-correct-button').onclick = showCorrectAnswer;
