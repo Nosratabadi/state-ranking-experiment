@@ -59,6 +59,7 @@ let participantId = Date.now().toString(36) + Math.random().toString(36).substr(
 let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
+let currentSelection = null;
 
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwptxzxeqgN_8fpbKlyC-6ySVwMfu1lSQvwcqDTirxmigZDNFKAl3f4IWaUwjueoC1PaA/exec';
 
@@ -88,6 +89,7 @@ function loadStimulus() {
             content += `
                 <p>Please select a rank for this state from the available numbers below.</p>
                 <div id="rank-buttons"></div>
+                <button id="submit-rank" disabled>Submit Rank</button>
                 <button id="check-correct-button" disabled>Check Correct Answer</button>
                 <div id="correct-answer-text"></div>
                 ${!isSecondRound ? '<button id="check-ai-button" disabled>Check AI\'s Prediction</button>' : ''}
@@ -105,11 +107,12 @@ function loadStimulus() {
                 const button = document.createElement('button');
                 button.className = 'rank-button';
                 button.textContent = rank;
-                button.onclick = () => onRankSelect(rank);
+                button.onclick = () => selectRank(rank, button);
                 rankButtonsContainer.appendChild(button);
             });
         }
 
+        document.getElementById('submit-rank').onclick = onSubmitRank;
         document.getElementById('check-correct-button').onclick = showCorrectAnswer;
         if (!isSecondRound) {
             document.getElementById('check-ai-button').onclick = showAIPrediction;
@@ -134,9 +137,24 @@ function loadStimulus() {
             showFinalReward();
         }
     }
+    currentSelection = null;
 }
 
-function onRankSelect(rank) {
+function selectRank(rank, button) {
+    if (currentSelection) {
+        currentSelection.style.backgroundColor = '';
+        currentSelection.disabled = false;
+    }
+    button.style.backgroundColor = 'lightgray';
+    button.disabled = true;
+    currentSelection = button;
+    document.getElementById('submit-rank').disabled = false;
+}
+
+function onSubmitRank() {
+    if (!currentSelection) return;
+    
+    const rank = parseInt(currentSelection.textContent);
     saveData({
         participantId: participantId,
         round: isSecondRound ? 2 : 1,
@@ -146,13 +164,19 @@ function onRankSelect(rank) {
         ai_prediction: currentStimulus.ai_prediction,
         final_decision: ''
     });
-    availableRanks = availableRanks.filter(r => r !== rank);
-    event.target.disabled = true;
-    event.target.style.backgroundColor = 'lightgray';
+    
+    document.getElementById('submit-rank').disabled = true;
     document.getElementById('check-correct-button').disabled = false;
     if (!isSecondRound) {
         document.getElementById('check-ai-button').disabled = false;
     }
+    
+    const rankButtons = document.querySelectorAll('.rank-button');
+    rankButtons.forEach(button => {
+        if (button !== currentSelection) {
+            button.disabled = true;
+        }
+    });
 }
 
 function showCorrectAnswer() {
@@ -161,7 +185,7 @@ function showCorrectAnswer() {
     if (isSecondRound) {
         if (delegatedToAI && currentStimulus.ai_prediction === correctAnswer) {
             correctAnswers++;
-        } else if (!delegatedToAI && parseInt(event.target.textContent) === correctAnswer) {
+        } else if (!delegatedToAI && parseInt(currentSelection.textContent) === correctAnswer) {
             correctAnswers++;
         }
     }
