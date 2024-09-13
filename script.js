@@ -110,9 +110,9 @@ function loadStimulus() {
                 button.onclick = () => selectRank(rank, button);
                 rankButtonsContainer.appendChild(button);
             });
+            document.getElementById('submit-rank').onclick = onSubmitRank;
         }
 
-        document.getElementById('submit-rank').onclick = onSubmitRank;
         document.getElementById('check-correct-button').onclick = showCorrectAnswer;
         if (!isSecondRound) {
             document.getElementById('check-ai-button').onclick = showAIPrediction;
@@ -185,7 +185,7 @@ function showCorrectAnswer() {
     if (isSecondRound) {
         if (delegatedToAI && currentStimulus.ai_prediction === correctAnswer) {
             correctAnswers++;
-        } else if (!delegatedToAI && parseInt(currentSelection.textContent) === correctAnswer) {
+        } else if (!delegatedToAI && currentSelection && parseInt(currentSelection.textContent) === correctAnswer) {
             correctAnswers++;
         }
     }
