@@ -13,46 +13,54 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        #rank-buttons {
-            display: grid;
-            grid-template-columns: repeat(10, auto);
-            gap: 5px;
-            justify-content: start;
+        table {
+            border-collapse: collapse;
+            width: 100%;
             margin-bottom: 20px;
         }
-        .rank-button {
-            width: 30px;
-            height: 30px;
-            padding: 0;
-            font-size: 14px;
-            cursor: pointer;
+        td, th {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
         }
         button {
-            margin-right: 10px;
             padding: 5px 10px;
             cursor: pointer;
         }
-        #stimulus-text table {
-            border-collapse: collapse;
-            margin-bottom: 20px;
+        #results-table {
+            margin-top: 20px;
         }
-        #stimulus-text td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        #results-table th, #results-table td {
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div id="experiment">
         <div id="stimulus-text"></div>
-        <div id="rank-buttons"></div>
-        <button id="check-correct-button" disabled>Check Correct Answer</button>
-        <div id="correct-answer-text"></div>
-        <button id="check-ai-button" disabled>Check AI's Prediction</button>
-        <div id="ai-prediction-text"></div>
+        <div id="input-area">
+            <label for="rank-input">Enter your predicted rank (1-50): </label>
+            <input type="number" id="rank-input" min="1" max="50">
+            <button id="submit-rank">Submit Rank</button>
+        </div>
+        <table id="results-table">
+            <tr>
+                <th>You</th>
+                <th>AI Prediction</th>
+                <th>The Correct Rank</th>
+            </tr>
+            <tr>
+                <td id="user-prediction"></td>
+                <td id="ai-prediction"></td>
+                <td id="correct-rank"></td>
+            </tr>
+        </table>
         <button id="next-button" disabled>Next</button>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
