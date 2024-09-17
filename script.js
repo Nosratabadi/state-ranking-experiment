@@ -72,10 +72,8 @@ function loadStimulus() {
         document.getElementById('travel-rank').textContent = currentStimulus.travel_rank;
         
         updateResultsTable();
+        updateInputArea();
         
-        document.getElementById('rank-input').value = '';
-        document.getElementById('rank-input').disabled = false;
-        document.getElementById('submit-rank').disabled = false;
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -85,7 +83,18 @@ function loadStimulus() {
 
 function updateResultsTable() {
     const resultsTable = document.getElementById('results-table');
-    if (isSecondRound && !delegatedToAI) {
+    if (isSecondRound && delegatedToAI) {
+        resultsTable.innerHTML = `
+            <tr>
+                <th>AI Prediction</th>
+                <th>Correct Answer</th>
+            </tr>
+            <tr>
+                <td id="ai-prediction"></td>
+                <td id="correct-rank"></td>
+            </tr>
+        `;
+    } else if (isSecondRound && !delegatedToAI) {
         resultsTable.innerHTML = `
             <tr>
                 <th>You</th>
@@ -112,6 +121,23 @@ function updateResultsTable() {
     }
 }
 
+function updateInputArea() {
+    const inputArea = document.querySelector('.input-area');
+    if (isSecondRound && delegatedToAI) {
+        inputArea.innerHTML = `
+            <button id="reveal-ai">Reveal AI Prediction</button>
+        `;
+        document.getElementById('reveal-ai').addEventListener('click', onRevealAI);
+    } else {
+        inputArea.innerHTML = `
+            <label for="rank-input">Please write a rank for this state below:</label>
+            <input type="number" id="rank-input" min="1" max="50">
+            <button id="submit-rank">Submit Rank</button>
+        `;
+        setupEventListeners();
+    }
+}
+
 function onSubmitRank() {
     const userRank = parseInt(document.getElementById('rank-input').value);
     if (isNaN(userRank) || userRank < 1 || userRank > 50) {
@@ -123,7 +149,7 @@ function onSubmitRank() {
     document.getElementById('submit-rank').disabled = true;
     document.getElementById('rank-input').disabled = true;
     
-    if (!isSecondRound || delegatedToAI) {
+    if (!isSecondRound) {
         setTimeout(() => {
             document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
             showCorrectAnswer();
@@ -133,22 +159,36 @@ function onSubmitRank() {
     }
 }
 
+function onRevealAI() {
+    document.getElementById('reveal-ai').disabled = true;
+    document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
+    setTimeout(showCorrectAnswer, 1000);
+}
+
 function showCorrectAnswer() {
     setTimeout(() => {
         document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
         
-        if (parseInt(document.getElementById('user-prediction').textContent) === currentStimulus.correct_answer) {
-            correctAnswers++;
+        if (isSecondRound) {
+            if (delegatedToAI) {
+                if (currentStimulus.ai_prediction === currentStimulus.correct_answer) {
+                    correctAnswers++;
+                }
+            } else {
+                if (parseInt(document.getElementById('user-prediction').textContent) === currentStimulus.correct_answer) {
+                    correctAnswers++;
+                }
+            }
         }
         
         saveData({
             participantId: participantId,
             round: isSecondRound ? 2 : 1,
             trial: currentTrial + 1,
-            participant_rank: document.getElementById('user-prediction').textContent,
+            participant_rank: isSecondRound && delegatedToAI ? 'N/A' : document.getElementById('user-prediction').textContent,
             correct_rank: currentStimulus.correct_answer,
-            ai_prediction: isSecondRound && !delegatedToAI ? 'N/A' : currentStimulus.ai_prediction,
-            final_decision: ''
+            ai_prediction: currentStimulus.ai_prediction,
+            final_decision: isSecondRound ? (delegatedToAI ? 'AI' : 'Self') : 'N/A'
         });
 
         currentTrial++;
@@ -169,8 +209,18 @@ function onFinalDecision(decision) {
     isSecondRound = true;
     currentTrial = 0;
     correctAnswers = 0;
+    
+    saveData({
+        participantId: participantId,
+        round: 2,
+        trial: 0,
+        participant_rank: 'N/A',
+        correct_rank: 'N/A',
+        ai_prediction: 'N/A',
+        final_decision: delegatedToAI ? 'AI' : 'Self'
+    });
+    
     document.getElementById('experiment').innerHTML = originalHTML;
-    setupEventListeners();
     loadStimulus();
 }
 
@@ -217,5 +267,4 @@ function setupEventListeners() {
 const originalHTML = document.getElementById('experiment').innerHTML;
 
 // Initialize the experiment
-setupEventListeners();
 loadStimulus();
