@@ -169,15 +169,15 @@ function showCorrectAnswer() {
     setTimeout(() => {
         document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
         
+        let isCorrect = false;
         if (isSecondRound) {
             if (delegatedToAI) {
-                if (currentStimulus.ai_prediction === currentStimulus.correct_answer) {
-                    correctAnswers++;
-                }
+                isCorrect = currentStimulus.ai_prediction === currentStimulus.correct_answer;
             } else {
-                if (parseInt(document.getElementById('user-prediction').textContent) === currentStimulus.correct_answer) {
-                    correctAnswers++;
-                }
+                isCorrect = parseInt(document.getElementById('user-prediction').textContent) === currentStimulus.correct_answer;
+            }
+            if (isCorrect) {
+                correctAnswers++;
             }
         }
         
@@ -185,10 +185,12 @@ function showCorrectAnswer() {
             participantId: participantId,
             round: isSecondRound ? 2 : 1,
             trial: currentTrial + 1,
-            participant_rank: isSecondRound && delegatedToAI ? 'N/A' : document.getElementById('user-prediction').textContent,
-            correct_rank: currentStimulus.correct_answer,
-            ai_prediction: currentStimulus.ai_prediction,
-            final_decision: isSecondRound ? (delegatedToAI ? 'AI' : 'Self') : 'N/A'
+            participantRank: isSecondRound && delegatedToAI ? 'N/A' : document.getElementById('user-prediction').textContent,
+            correctRank: currentStimulus.correct_answer,
+            aiPrediction: currentStimulus.ai_prediction,
+            finalDecision: isSecondRound ? (delegatedToAI ? 'AI' : 'Self') : 'N/A',
+            correctAnswers: isSecondRound ? correctAnswers : 'N/A',
+            reward: isSecondRound ? (correctAnswers * 1) : 'N/A'
         });
 
         currentTrial++;
@@ -214,10 +216,12 @@ function onFinalDecision(decision) {
         participantId: participantId,
         round: 2,
         trial: 0,
-        participant_rank: 'N/A',
-        correct_rank: 'N/A',
-        ai_prediction: 'N/A',
-        final_decision: delegatedToAI ? 'AI' : 'Self'
+        participantRank: 'N/A',
+        correctRank: 'N/A',
+        aiPrediction: 'N/A',
+        finalDecision: delegatedToAI ? 'AI' : 'Self',
+        correctAnswers: 'N/A',
+        reward: 'N/A'
     });
     
     document.getElementById('experiment').innerHTML = originalHTML;
@@ -232,17 +236,30 @@ function showFinalReward() {
         <p>Your reward is $${reward}.</p>
         <p>Thank you for participating!</p>
     `;
+    
+    saveData({
+        participantId: participantId,
+        round: 2,
+        trial: 'Final',
+        participantRank: 'N/A',
+        correctRank: 'N/A',
+        aiPrediction: 'N/A',
+        finalDecision: delegatedToAI ? 'AI' : 'Self',
+        correctAnswers: correctAnswers,
+        reward: reward
+    });
 }
 
 function saveData(data) {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(data)) {
+        formData.append(key, value);
+    }
+
     fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
-        cache: 'no-cache',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+        body: formData
     }).then(response => {
         console.log('Data sent successfully');
     }).catch(error => {
