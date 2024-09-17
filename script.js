@@ -71,7 +71,6 @@ function loadStimulus() {
         document.getElementById('income-rank').textContent = currentStimulus.income_rank;
         document.getElementById('travel-rank').textContent = currentStimulus.travel_rank;
         
-        // Reset the results table
         updateResultsTable();
         
         document.getElementById('rank-input').value = '';
@@ -85,29 +84,29 @@ function loadStimulus() {
 }
 
 function updateResultsTable() {
-    const resultsTable = document.querySelector('.results-table');
+    const resultsTable = document.getElementById('results-table');
     if (isSecondRound && !delegatedToAI) {
         resultsTable.innerHTML = `
             <tr>
-                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: center;">You</th>
-                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: center;">Correct Answer</th>
+                <th>You</th>
+                <th>Correct Answer</th>
             </tr>
             <tr>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;" id="user-prediction"></td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;" id="correct-rank"></td>
+                <td id="user-prediction"></td>
+                <td id="correct-rank"></td>
             </tr>
         `;
     } else {
         resultsTable.innerHTML = `
             <tr>
-                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: center;">You</th>
-                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: center;">AI Prediction</th>
-                <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2; text-align: center;">Correct Answer</th>
+                <th>You</th>
+                <th>AI Prediction</th>
+                <th>Correct Answer</th>
             </tr>
             <tr>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;" id="user-prediction"></td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;" id="ai-prediction"></td>
-                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;" id="correct-rank"></td>
+                <td id="user-prediction"></td>
+                <td id="ai-prediction"></td>
+                <td id="correct-rank"></td>
             </tr>
         `;
     }
@@ -125,7 +124,6 @@ function onSubmitRank() {
     document.getElementById('rank-input').disabled = true;
     
     if (!isSecondRound || delegatedToAI) {
-        // Show AI prediction after 1 second
         setTimeout(() => {
             document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
             showCorrectAnswer();
@@ -198,7 +196,6 @@ function saveData(data) {
         console.log('Data sent successfully');
     }).catch(error => {
         console.error('Error sending data:', error);
-        // Attempt to save locally if network request fails
         let localData = JSON.parse(localStorage.getItem('experimentData') || '[]');
         localData.push(data);
         localStorage.setItem('experimentData', JSON.stringify(localData));
