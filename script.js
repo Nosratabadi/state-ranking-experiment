@@ -78,6 +78,17 @@ function loadStimulus() {
         
         document.getElementById('rank-input').value = '';
         document.getElementById('submit-rank').disabled = false;
+
+        // Reattach event listener to submit button
+        document.getElementById('submit-rank').onclick = onSubmitRank;
+
+        // Add event listener for 'Enter' key on input field
+        document.getElementById('rank-input').onkeypress = function(e) {
+            if (e.which == 13) {
+                onSubmitRank();
+                return false;
+            }
+        };
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -94,6 +105,7 @@ function onSubmitRank() {
     
     document.getElementById('user-prediction').textContent = userRank;
     document.getElementById('submit-rank').disabled = true;
+    document.getElementById('rank-input').disabled = true;
     
     // Show AI prediction after 1 second
     setTimeout(() => {
@@ -171,5 +183,4 @@ function saveData(data) {
 }
 
 // Initialize the experiment
-document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
 loadStimulus();
