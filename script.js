@@ -71,24 +71,13 @@ function loadStimulus() {
         document.getElementById('income-rank').textContent = currentStimulus.income_rank;
         document.getElementById('travel-rank').textContent = currentStimulus.travel_rank;
         
-        // Reset the results table
+        // Reset the results table and input
         document.getElementById('user-prediction').textContent = '';
         document.getElementById('ai-prediction').textContent = '';
         document.getElementById('correct-rank').textContent = '';
-        
         document.getElementById('rank-input').value = '';
+        document.getElementById('rank-input').disabled = false;
         document.getElementById('submit-rank').disabled = false;
-
-        // Reattach event listener to submit button
-        document.getElementById('submit-rank').onclick = onSubmitRank;
-
-        // Add event listener for 'Enter' key on input field
-        document.getElementById('rank-input').onkeypress = function(e) {
-            if (e.which == 13) {
-                onSubmitRank();
-                return false;
-            }
-        };
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -148,6 +137,7 @@ function onFinalDecision(decision) {
     isSecondRound = true;
     currentTrial = 0;
     correctAnswers = 0;
+    document.getElementById('experiment').innerHTML = originalHTML;
     loadStimulus();
 }
 
@@ -182,5 +172,9 @@ function saveData(data) {
     });
 }
 
+// Store the original HTML for resetting after the final decision
+const originalHTML = document.getElementById('experiment').innerHTML;
+
 // Initialize the experiment
+document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
 loadStimulus();
