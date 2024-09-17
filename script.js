@@ -170,6 +170,7 @@ function onFinalDecision(decision) {
     currentTrial = 0;
     correctAnswers = 0;
     document.getElementById('experiment').innerHTML = originalHTML;
+    setupEventListeners();
     loadStimulus();
 }
 
@@ -203,9 +204,18 @@ function saveData(data) {
     });
 }
 
+function setupEventListeners() {
+    document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
+    document.getElementById('rank-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            onSubmitRank();
+        }
+    });
+}
+
 // Store the original HTML for resetting after the final decision
 const originalHTML = document.getElementById('experiment').innerHTML;
 
 // Initialize the experiment
-document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
+setupEventListeners();
 loadStimulus();
