@@ -76,17 +76,8 @@ function loadStimulus() {
         document.getElementById('ai-prediction').textContent = '';
         document.getElementById('correct-rank').textContent = '';
         
-        if (isSecondRound && delegatedToAI) {
-            document.getElementById('input-area').innerHTML = '<button id="reveal-ai">Reveal AI Prediction</button>';
-            document.getElementById('reveal-ai').addEventListener('click', revealAIPrediction);
-        } else {
-            document.getElementById('input-area').innerHTML = `
-                <label for="rank-input">Please write a rank for this state below:</label>
-                <input type="number" id="rank-input" min="1" max="50">
-                <button id="submit-rank">Submit Rank</button>
-            `;
-            document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
-        }
+        document.getElementById('rank-input').value = '';
+        document.getElementById('submit-rank').disabled = false;
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -102,41 +93,33 @@ function onSubmitRank() {
     }
     
     document.getElementById('user-prediction').textContent = userRank;
+    document.getElementById('submit-rank').disabled = true;
     
-    if (userRank === currentStimulus.correct_answer) {
-        correctAnswers++;
-    }
-    
-    showCorrectAnswer();
-}
-
-function revealAIPrediction() {
-    document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
-    document.getElementById('reveal-ai').disabled = true;
-    
-    if (currentStimulus.ai_prediction === currentStimulus.correct_answer) {
-        correctAnswers++;
-    }
-    
-    showCorrectAnswer();
-}
-
-function showCorrectAnswer() {
+    // Show AI prediction after 1 second
     setTimeout(() => {
-        document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
+        document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
         
-        saveData({
-            participantId: participantId,
-            round: isSecondRound ? 2 : 1,
-            trial: currentTrial + 1,
-            participant_rank: document.getElementById('user-prediction').textContent,
-            correct_rank: currentStimulus.correct_answer,
-            ai_prediction: document.getElementById('ai-prediction').textContent,
-            final_decision: delegatedToAI ? 'ai' : 'self'
-        });
+        // Show correct answer after another 1 second
+        setTimeout(() => {
+            document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
+            
+            if (userRank === currentStimulus.correct_answer) {
+                correctAnswers++;
+            }
+            
+            saveData({
+                participantId: participantId,
+                round: isSecondRound ? 2 : 1,
+                trial: currentTrial + 1,
+                participant_rank: userRank,
+                correct_rank: currentStimulus.correct_answer,
+                ai_prediction: currentStimulus.ai_prediction,
+                final_decision: ''
+            });
 
-        currentTrial++;
-        setTimeout(loadStimulus, 2000);  // Load next stimulus after 2 seconds
+            currentTrial++;
+            setTimeout(loadStimulus, 2000);  // Load next stimulus after 2 seconds
+        }, 1000);
     }, 1000);
 }
 
@@ -188,4 +171,5 @@ function saveData(data) {
 }
 
 // Initialize the experiment
+document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
 loadStimulus();
