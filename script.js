@@ -52,7 +52,7 @@ const stimuli = [
 ];
 
 let currentTrial = 0;
-const maxTrials = 10;
+const trialsPerRound = 10;
 let currentStimulus = null;
 let participantId = Date.now().toString(36) + Math.random().toString(36).substr(2);
 let isSecondRound = false;
@@ -62,29 +62,33 @@ let correctAnswers = 0;
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwptxzxeqgN_8fpbKlyC-6ySVwMfu1lSQvwcqDTirxmigZDNFKAl3f4IWaUwjueoC1PaA/exec';
 
 function loadStimulus() {
-    if (currentTrial < maxTrials) {
+    if (currentTrial < trialsPerRound) {
         currentStimulus = stimuli[Math.floor(Math.random() * stimuli.length)];
-        let content = `
-            <h3>State Information:</h3>
-            <table>
-                <tr><td>Number of Major Airports</td><td>${currentStimulus.airports}</td></tr>
-                <tr><td>Census Population Rank - 2010</td><td>${currentStimulus.population_rank}</td></tr>
-                <tr><td>Number of Counties Rank</td><td>${currentStimulus.counties_rank}</td></tr>
-                <tr><td>Median Household Income Rank - 2008</td><td>${currentStimulus.income_rank}</td></tr>
-                <tr><td>Domestic Travel Expenditure Rank - 2009</td><td>${currentStimulus.travel_rank}</td></tr>
-            </table>
-        `;
-        document.getElementById('stimulus-text').innerHTML = content;
+        
+        document.getElementById('airports').textContent = currentStimulus.airports;
+        document.getElementById('population-rank').textContent = currentStimulus.population_rank;
+        document.getElementById('counties-rank').textContent = currentStimulus.counties_rank;
+        document.getElementById('income-rank').textContent = currentStimulus.income_rank;
+        document.getElementById('travel-rank').textContent = currentStimulus.travel_rank;
         
         // Reset the results table
         document.getElementById('user-prediction').textContent = '';
         document.getElementById('ai-prediction').textContent = '';
         document.getElementById('correct-rank').textContent = '';
         
-        // Enable the submit button and input
-        document.getElementById('submit-rank').disabled = false;
-        document.getElementById('rank-input').disabled = false;
-        document.getElementById('next-button').disabled = true;
+        if (isSecondRound && delegatedToAI) {
+            document.getElementById('input-area').innerHTML = '<button id="reveal-ai">Reveal AI Prediction</button>';
+            document.getElementById('reveal-ai').addEventListener('click', revealAIPrediction);
+        } else {
+            document.getElementById('input-area').innerHTML = `
+                <label for="rank-input">Please write a rank for this state below:</label>
+                <input type="number" id="rank-input" min="1" max="50">
+                <button id="submit-rank">Submit Rank</button>
+            `;
+            document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
+        }
+    } else if (isSecondRound) {
+        showFinalReward();
     } else {
         showFinalDecision();
     }
@@ -98,34 +102,42 @@ function onSubmitRank() {
     }
     
     document.getElementById('user-prediction').textContent = userRank;
-    document.getElementById('submit-rank').disabled = true;
-    document.getElementById('rank-input').disabled = true;
     
-    // Show AI prediction after 1 second
-    setTimeout(() => {
-        document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
-        
-        // Show correct rank after another 1 second
-        setTimeout(() => {
-            document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
-            document.getElementById('next-button').disabled = false;
-            
-            saveData({
-                participantId: participantId,
-                round: isSecondRound ? 2 : 1,
-                trial: currentTrial + 1,
-                participant_rank: userRank,
-                correct_rank: currentStimulus.correct_answer,
-                ai_prediction: currentStimulus.ai_prediction,
-                final_decision: ''
-            });
-        }, 1000);
-    }, 1000);
+    if (userRank === currentStimulus.correct_answer) {
+        correctAnswers++;
+    }
+    
+    showCorrectAnswer();
 }
 
-function nextTrial() {
-    currentTrial++;
-    loadStimulus();
+function revealAIPrediction() {
+    document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
+    document.getElementById('reveal-ai').disabled = true;
+    
+    if (currentStimulus.ai_prediction === currentStimulus.correct_answer) {
+        correctAnswers++;
+    }
+    
+    showCorrectAnswer();
+}
+
+function showCorrectAnswer() {
+    setTimeout(() => {
+        document.getElementById('correct-rank').textContent = currentStimulus.correct_answer;
+        
+        saveData({
+            participantId: participantId,
+            round: isSecondRound ? 2 : 1,
+            trial: currentTrial + 1,
+            participant_rank: document.getElementById('user-prediction').textContent,
+            correct_rank: currentStimulus.correct_answer,
+            ai_prediction: document.getElementById('ai-prediction').textContent,
+            final_decision: delegatedToAI ? 'ai' : 'self'
+        });
+
+        currentTrial++;
+        setTimeout(loadStimulus, 2000);  // Load next stimulus after 2 seconds
+    }, 1000);
 }
 
 function showFinalDecision() {
@@ -137,21 +149,21 @@ function showFinalDecision() {
 }
 
 function onFinalDecision(decision) {
-    saveData({
-        participantId: participantId,
-        round: 1,
-        trial: 'Final',
-        participant_rank: '',
-        correct_rank: '',
-        ai_prediction: '',
-        final_decision: decision
-    });
-
     delegatedToAI = decision === 'ai';
     isSecondRound = true;
     currentTrial = 0;
     correctAnswers = 0;
     loadStimulus();
+}
+
+function showFinalReward() {
+    const reward = correctAnswers * 1; // $1 per correct answer
+    document.getElementById('experiment').innerHTML = `
+        <h3>Experiment Completed</h3>
+        <p>You got ${correctAnswers} correct predictions in the second round.</p>
+        <p>Your reward is $${reward}.</p>
+        <p>Thank you for participating!</p>
+    `;
 }
 
 function saveData(data) {
@@ -176,6 +188,4 @@ function saveData(data) {
 }
 
 // Initialize the experiment
-document.getElementById('submit-rank').addEventListener('click', onSubmitRank);
-document.getElementById('next-button').addEventListener('click', nextTrial);
 loadStimulus();
