@@ -59,7 +59,7 @@ let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
 
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzMSglP2u10JClDCATBcs8BXoI8Znf96PJlszpS99avhxuzNxNOrorcmtfZMsUpbvwL/exec';
+const GOOGLE_SHEET_URL = 'YOUR_NEW_GOOGLE_APPS_SCRIPT_URL_HERE';
 
 function loadStimulus() {
     if (currentTrial < trialsPerRound) {
@@ -261,10 +261,6 @@ function saveData(data) {
         console.log('Data sent successfully');
     }).catch(error => {
         console.error('Error sending data:', error);
-        let localData = JSON.parse(localStorage.getItem('experimentData') || '[]');
-        localData.push(data);
-        localStorage.setItem('experimentData', JSON.stringify(localData));
-        console.log('Data saved locally due to network error');
     });
 }
 
