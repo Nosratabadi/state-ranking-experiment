@@ -59,7 +59,7 @@ let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
 
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwptxzxeqgN_8fpbKlyC-6ySVwMfu1lSQvwcqDTirxmigZDNFKAl3f4IWaUwjueoC1PaA/exec';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxYumpRZCrwlRA-fdgToctjWlGFKVBI8GG2DaIC7TX0UDez5NymRaByJXFoSJsrl8h2/exec';
 
 function loadStimulus() {
     if (currentTrial < trialsPerRound) {
