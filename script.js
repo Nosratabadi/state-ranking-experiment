@@ -161,7 +161,7 @@ function onSubmitRank() {
 function onRevealAI() {
     document.getElementById('reveal-ai').disabled = true;
     document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
-    setTimeout(showCorrectAnswer, 1000);
+    setTimeout(showCorrectAnswer, 500);
 }
 
 function showCorrectAnswer() {
