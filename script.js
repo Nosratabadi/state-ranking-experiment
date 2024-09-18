@@ -59,7 +59,7 @@ let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
 
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxYumpRZCrwlRA-fdgToctjWlGFKVBI8GG2DaIC7TX0UDez5NymRaByJXFoSJsrl8h2/exec';
+const GOOGLE_SHEET_URL = 'YOUR_NEW_GOOGLE_APPS_SCRIPT_URL_HERE';
 
 function loadStimulus() {
     if (currentTrial < trialsPerRound) {
@@ -73,7 +73,6 @@ function loadStimulus() {
         
         updateResultsTable();
         updateInputArea();
-        
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -251,15 +250,13 @@ function showFinalReward() {
 }
 
 function saveData(data) {
-    const formData = new FormData();
-    for (const [key, value] of Object.entries(data)) {
-        formData.append(key, value);
-    }
-
     fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
     }).then(response => {
         console.log('Data sent successfully');
     }).catch(error => {
