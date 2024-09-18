@@ -250,6 +250,8 @@ function showFinalReward() {
 }
 
 function saveData(data) {
+    console.log('Attempting to save data:', data);
+    
     fetch(GOOGLE_SHEET_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -258,7 +260,11 @@ function saveData(data) {
         },
         body: JSON.stringify(data)
     }).then(response => {
-        console.log('Data sent successfully');
+        if (response.ok) {
+            console.log('Data sent successfully');
+        } else {
+            console.error('Server responded with an error:', response.status);
+        }
     }).catch(error => {
         console.error('Error sending data:', error);
     });
