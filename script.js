@@ -228,14 +228,7 @@ function showFinalReward() {
         <p>Thank you for participating!</p>
     `;
     
-    saveData({
-        participantId: participantId,
-        round: 2,
-        trial: 'Final',
-        finalDecision: delegatedToAI ? 'AI' : 'Self',
-        correctAnswers: correctAnswers,
-        reward: reward
-    });
+    // Removed the final saveData call here
 }
 
 function saveData(data) {
