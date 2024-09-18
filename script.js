@@ -59,7 +59,7 @@ let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
 
-const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbzCZeXIHUFIYsHgoozzuXao1UhJFUHUpfxx5EJ8ciO1h8Ql0DqTQx5afwL_lnp4qKN9/exec';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwVeLZlAFuX25NKGzBuFsSlfO_9uDJTPMErFN3L08-2jbjx-gzBCIe8UZvmtlZlGqak/exec';
 
 function loadStimulus() {
     if (currentTrial < trialsPerRound) {
@@ -180,17 +180,16 @@ function showCorrectAnswer() {
             }
         }
         
-        saveData({
-            participantId: participantId,
-            round: isSecondRound ? 2 : 1,
-            trial: currentTrial + 1,
-            participantRank: isSecondRound && delegatedToAI ? 'N/A' : document.getElementById('user-prediction').textContent,
-            correctRank: currentStimulus.correct_answer,
-            aiPrediction: currentStimulus.ai_prediction,
-            finalDecision: isSecondRound ? (delegatedToAI ? 'AI' : 'Self') : 'N/A',
-            correctAnswers: isSecondRound ? correctAnswers : 'N/A',
-            reward: isSecondRound ? (correctAnswers * 1) : 'N/A'
-        });
+        if (!isSecondRound || (isSecondRound && !delegatedToAI)) {
+            saveData({
+                participantId: participantId,
+                round: isSecondRound ? 2 : 1,
+                trial: currentTrial + 1,
+                participantRank: document.getElementById('user-prediction').textContent,
+                correctRank: currentStimulus.correct_answer,
+                aiPrediction: currentStimulus.ai_prediction,
+            });
+        }
 
         currentTrial++;
         setTimeout(loadStimulus, 2000);  // Load next stimulus after 2 seconds
@@ -213,14 +212,7 @@ function onFinalDecision(decision) {
     
     saveData({
         participantId: participantId,
-        round: 2,
-        trial: 0,
-        participantRank: 'N/A',
-        correctRank: 'N/A',
-        aiPrediction: 'N/A',
         finalDecision: delegatedToAI ? 'AI' : 'Self',
-        correctAnswers: 'N/A',
-        reward: 'N/A'
     });
     
     document.getElementById('experiment').innerHTML = originalHTML;
@@ -240,9 +232,6 @@ function showFinalReward() {
         participantId: participantId,
         round: 2,
         trial: 'Final',
-        participantRank: 'N/A',
-        correctRank: 'N/A',
-        aiPrediction: 'N/A',
         finalDecision: delegatedToAI ? 'AI' : 'Self',
         correctAnswers: correctAnswers,
         reward: reward
@@ -250,6 +239,13 @@ function showFinalReward() {
 }
 
 function saveData(data) {
+    // Remove any properties with empty values
+    for (let key in data) {
+        if (data[key] === '' || data[key] === null || data[key] === undefined) {
+            delete data[key];
+        }
+    }
+
     console.log('Attempting to save data:', data);
     
     fetch(GOOGLE_SHEET_URL, {
