@@ -201,7 +201,7 @@ function showCorrectAnswer() {
             participantRank: !isSecondRound || (isSecondRound && !delegatedToAI) ? document.getElementById('user-prediction').textContent : '',
             correctRank: currentStimulus.correct_answer,
             aiPrediction: !isSecondRound || (isSecondRound && delegatedToAI) ? currentStimulus.ai_prediction : '',
-            correctAnswers: isSecondRound ? (isCorrect ? 1 : '') : '',
+            correctAnswers: isSecondRound && isCorrect ? 1 : '',
         });
 
         currentTrial++;
@@ -241,15 +241,9 @@ function showFinalReward() {
         <p>Thank you for participating!</p>
     `;
     
-    // Save final data including correct answers and reward
+    // Save final data including reward
     saveData({
         participantId: participantId,
-        round: '',
-        trial: '',
-        participantRank: '',
-        correctRank: '',
-        aiPrediction: '',
-        correctAnswers: '',
         reward: reward
     });
 }
