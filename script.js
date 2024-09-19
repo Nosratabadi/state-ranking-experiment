@@ -58,12 +58,26 @@ let participantId = Date.now().toString(36) + Math.random().toString(36).substr(
 let isSecondRound = false;
 let delegatedToAI = false;
 let correctAnswers = 0;
+let shuffledStimuli = [];
 
 const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwVeLZlAFuX25NKGzBuFsSlfO_9uDJTPMErFN3L08-2jbjx-gzBCIe8UZvmtlZlGqak/exec';
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function initializeExperiment() {
+    shuffledStimuli = shuffleArray([...stimuli]);
+    loadStimulus();
+}
+
 function loadStimulus() {
     if (currentTrial < trialsPerRound) {
-        currentStimulus = stimuli[Math.floor(Math.random() * stimuli.length)];
+        currentStimulus = shuffledStimuli[currentTrial + (isSecondRound ? trialsPerRound : 0)];
         
         document.getElementById('airports').textContent = currentStimulus.airports;
         document.getElementById('population-rank').textContent = currentStimulus.population_rank;
@@ -180,17 +194,15 @@ function showCorrectAnswer() {
             }
         }
         
-        if (!isSecondRound || (isSecondRound && !delegatedToAI)) {
-            saveData({
-                participantId: participantId,
-                round: isSecondRound ? 2 : 1,
-                trial: currentTrial + 1,
-                participantRank: document.getElementById('user-prediction').textContent,
-                correctRank: currentStimulus.correct_answer,
-                aiPrediction: currentStimulus.ai_prediction,
-                correctAnswers: isSecondRound ? correctAnswers : undefined,
-            });
-        }
+        saveData({
+            participantId: participantId,
+            round: isSecondRound ? 2 : 1,
+            trial: currentTrial + 1,
+            participantRank: !isSecondRound || (isSecondRound && !delegatedToAI) ? document.getElementById('user-prediction').textContent : '',
+            correctRank: currentStimulus.correct_answer,
+            aiPrediction: !isSecondRound || (isSecondRound && delegatedToAI) ? currentStimulus.ai_prediction : '',
+            correctAnswers: isSecondRound ? (isCorrect ? 1 : '') : '',
+        });
 
         currentTrial++;
         setTimeout(loadStimulus, 2000);  // Load next stimulus after 2 seconds
@@ -232,9 +244,12 @@ function showFinalReward() {
     // Save final data including correct answers and reward
     saveData({
         participantId: participantId,
-        round: 2,
-        trial: trialsPerRound,
-        correctAnswers: correctAnswers,
+        round: '',
+        trial: '',
+        participantRank: '',
+        correctRank: '',
+        aiPrediction: '',
+        correctAnswers: '',
         reward: reward
     });
 }
@@ -280,4 +295,4 @@ function setupEventListeners() {
 const originalHTML = document.getElementById('experiment').innerHTML;
 
 // Initialize the experiment
-loadStimulus();
+initializeExperiment();
