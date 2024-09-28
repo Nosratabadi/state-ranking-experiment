@@ -50,6 +50,12 @@
         .results-table th {
             background-color: #f2f2f2;  /* Light grey background */
         }
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 30%;
+        }
         .ai-predictor {
             display: flex;
             flex-direction: column;
@@ -97,16 +103,18 @@
                 <tr><td>Domestic Travel Expenditure Rank - 2009</td><td id="travel-rank"></td></tr>
             </table>
 
-            <table class="results-table" id="results-table">
-                <!-- This will be populated by JavaScript -->
-            </table>
-        </div>
+            <div class="results-container">
+                <table class="results-table" id="results-table">
+                    <!-- This will be populated by JavaScript -->
+                </table>
 
-        <div class="ai-predictor">
-            <div class="speech-balloon">
-                <p id="ai-prediction-text"></p>
+                <div class="ai-predictor">
+                    <div class="speech-balloon">
+                        <p id="ai-prediction-text"></p>
+                    </div>
+                    <img src="images/ai-avatar.png" alt="AI Avatar" class="ai-avatar">
+                </div>
             </div>
-            <img src="images/ai-avatar.png" alt="AI Avatar" class="ai-avatar">
         </div>
 
         <div class="input-area">
