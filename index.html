@@ -37,11 +37,11 @@
             text-align: center;
         }
         .results-table td {
-            height: 24px; /* Fixed height for result cells */
-            min-width: 40px; /* Minimum width for result cells */
+            height: 24px;
+            min-width: 40px;
         }
         .input-area {
-            margin-top: 10px; /* Reduced top margin */
+            margin-top: 10px;
         }
         input[type="number"] {
             width: 60px;
@@ -63,20 +63,20 @@
         .ai-predictor {
             position: relative;
             width: 100%;
-            height: 140px; /* Reduced height */
+            height: 250px; /* Increased height to accommodate larger avatar */
             margin-top: 10px;
         }
         .ai-avatar {
             position: absolute;
-            bottom: 0;
+            bottom: -25px; /* Moved down by 2.5cm (converted to pixels) */
             left: 50%;
             transform: translateX(-50%);
-            width: 300px;
-            height: 300px;
+            width: 220px; /* Increased width by 2.75 times */
+            height: 220px; /* Increased height by 2.75 times */
         }
         .speech-balloon {
             position: absolute;
-            bottom: 90px;
+            bottom: 200px; /* Adjusted to sit above the larger avatar */
             left: 50%;
             transform: translateX(-50%);
             background-color: #f0f0f0;
