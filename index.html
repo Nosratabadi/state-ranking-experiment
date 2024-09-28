@@ -49,11 +49,43 @@
         .results-table th {
             background-color: #f2f2f2;  /* Light grey background */
         }
+        .ai-predictor {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .ai-avatar {
+            width: 100px;
+            height: 100px;
+        }
+        .speech-balloon {
+            position: absolute;
+            left: 120px;
+            top: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 200px;
+        }
+        .speech-balloon:before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            border-right: 10px solid #f0f0f0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }                
     </style>
 </head>
 <body>
     <div id="experiment">
         <h3>State Information:</h3>
+        <div class="ai-predictor">
+    <img src="images/ai-avatar.png" alt="AI Avatar" class="ai-avatar">
+    <div class="speech-balloon">
+        <p id="ai-prediction-text"></p>
+    </div>
+</div>
         <div class="container">
             <table class="info-table">
                 <tr><td>Number of Major Airports</td><td id="airports"></td></tr>
