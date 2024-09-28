@@ -136,10 +136,12 @@ function updateAIPrediction(prediction) {
     const speechBalloon = document.querySelector('.speech-balloon');
     if (prediction) {
         aiPredictionText.textContent = `My prediction: ${prediction}`;
-        speechBalloon.style.display = 'block';
+        speechBalloon.style.visibility = 'visible';
+        speechBalloon.style.opacity = '1';
     } else {
         aiPredictionText.textContent = '';
-        speechBalloon.style.display = 'none';
+        speechBalloon.style.visibility = 'hidden';
+        speechBalloon.style.opacity = '0';
     }
 }
 
