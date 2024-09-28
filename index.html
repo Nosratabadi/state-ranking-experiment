@@ -26,7 +26,7 @@
             width: 65%;
         }
         .results-table {
-            width: 30%;
+            width: 100%;
         }
         .info-table td, .results-table th, .results-table td {
             border: 1px solid #ddd;
@@ -57,23 +57,30 @@
             width: 30%;
         }
         .ai-predictor {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            position: relative;
+            width: 100%;
+            height: 180px;  /* Fixed height to accommodate speech balloon and avatar */
             margin-top: 20px;
         }
         .ai-avatar {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100px;
             height: 100px;
-            margin-top: 10px;
         }
         .speech-balloon {
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: #f0f0f0;
             border-radius: 10px;
             padding: 10px;
             max-width: 200px;
-            margin-bottom: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         .speech-balloon:after {
             content: '';
