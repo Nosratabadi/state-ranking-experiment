@@ -133,7 +133,14 @@ function updateResultsTable() {
 
 function updateAIPrediction(prediction) {
     const aiPredictionText = document.getElementById('ai-prediction-text');
-    aiPredictionText.textContent = `My prediction: ${prediction}`;
+    const speechBalloon = document.querySelector('.speech-balloon');
+    if (prediction) {
+        aiPredictionText.textContent = `My prediction: ${prediction}`;
+        speechBalloon.style.display = 'block';
+    } else {
+        aiPredictionText.textContent = '';
+        speechBalloon.style.display = 'none';
+    }
 }
 
 function updateInputArea() {
