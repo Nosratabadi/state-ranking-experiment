@@ -48,7 +48,7 @@
             cursor: pointer;
         }
         .results-table th {
-            background-color: #f2f2f2;  /* Light grey background */
+            background-color: #f2f2f2;
         }
         .results-container {
             display: flex;
@@ -59,28 +59,29 @@
         .ai-predictor {
             position: relative;
             width: 100%;
-            height: 180px;  /* Fixed height to accommodate speech balloon and avatar */
-            margin-top: 20px;
+            height: 160px;
+            margin-top: 10px;
         }
         .ai-avatar {
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
         }
         .speech-balloon {
             position: absolute;
-            top: 0;
+            bottom: 90px;
             left: 50%;
             transform: translateX(-50%);
             background-color: #f0f0f0;
             border-radius: 10px;
             padding: 10px;
             max-width: 200px;
+            visibility: hidden;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: visibility 0s, opacity 0.3s linear;
         }
         .speech-balloon:after {
             content: '';
