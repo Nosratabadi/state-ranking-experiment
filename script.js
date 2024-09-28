@@ -87,6 +87,7 @@ function loadStimulus() {
         
         updateResultsTable();
         updateInputArea();
+        updateAIPrediction(''); // Clear AI prediction
     } else if (isSecondRound) {
         showFinalReward();
     } else {
@@ -99,11 +100,9 @@ function updateResultsTable() {
     if (isSecondRound && delegatedToAI) {
         resultsTable.innerHTML = `
             <tr>
-                <th>AI Prediction</th>
                 <th>Correct Answer</th>
             </tr>
             <tr>
-                <td id="ai-prediction"></td>
                 <td id="correct-rank"></td>
             </tr>
         `;
@@ -122,16 +121,19 @@ function updateResultsTable() {
         resultsTable.innerHTML = `
             <tr>
                 <th>You</th>
-                <th>AI Prediction</th>
                 <th>Correct Answer</th>
             </tr>
             <tr>
                 <td id="user-prediction"></td>
-                <td id="ai-prediction"></td>
                 <td id="correct-rank"></td>
             </tr>
         `;
     }
+}
+
+function updateAIPrediction(prediction) {
+    const aiPredictionText = document.getElementById('ai-prediction-text');
+    aiPredictionText.textContent = `My prediction: ${prediction}`;
 }
 
 function updateInputArea() {
@@ -164,7 +166,7 @@ function onSubmitRank() {
     
     if (!isSecondRound) {
         setTimeout(() => {
-            document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
+            updateAIPrediction(currentStimulus.ai_prediction);
             showCorrectAnswer();
         }, 1000);
     } else {
@@ -174,7 +176,7 @@ function onSubmitRank() {
 
 function onRevealAI() {
     document.getElementById('reveal-ai').disabled = true;
-    document.getElementById('ai-prediction').textContent = currentStimulus.ai_prediction;
+    updateAIPrediction(currentStimulus.ai_prediction);
     setTimeout(showCorrectAnswer, 1000);
 }
 
